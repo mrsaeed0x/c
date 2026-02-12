@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPUS X - AI Video Shortener</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+        .short-preview {
+            aspect-ratio: 9/16;
+            background: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Fixed Text Cut Issue & Added Smooth Motion */
+        .caption-overlay {
+            position: absolute;
+            bottom: 20%;
+            width: 90%; /* Fixed width to prevent edge cutting */
+            left: 5%; /* Centered */
+            text-align: center;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 1.4rem;
+            color: #fff;
+            text-shadow: 3px 3px 0px #000;
+            line-height: 1.2;
+            word-wrap: break-word; /* Prevents long word cutting */
+            animation: modernPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite alternate;
+        }
+        @keyframes modernPop {
+            0% { transform: scale(0.95); opacity: 0.9; }
+            100% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5)); }
+        }
+        /* Smooth loading spin */
+        .loader-glow {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+    <!-- Navbar -->
+    <nav class="flex justify-between items-center mb-12 max-w-6xl mx-auto">
+        <!-- FIXED: Removed italic to prevent 'X' cutting and added padding-right -->
+        <h1 class="text-3xl font-black tracking-tighter pr-2">OPUS <span class="gradient-text">X</span></h1>
+        <div class="hidden md:flex space-x-8 text-sm font-medium text-gray-400">
+            <a href="#" class="hover:text-white transition">Product</a>
+            <a href="#" class="hover:text-white transition">Pricing</a>
+            <a href="#" class="hover:text-white transition">API</a>
+        </div>
+        <button class="px-6 py-2 rounded-full border border-gray-700 text-sm hover:bg-white hover:text-black transition">Sign In</button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left: Upload & Input -->
+        <div class="lg:col-span-7 space-y-6">
+            <div class="glass-card p-8 text-center space-y-6">
+                <h2 class="text-4xl font-bold">Turn long videos into <span class="gradient-text">viral shorts.</span></h2>
+                <p class="text-gray-400">Paste a link or upload a file. Our AI handles the rest.</p>
+                
+                <div class="flex flex-col space-y-4">
+                    <input type="text" placeholder="Paste YouTube/Vimeo URL here..." class="w-full bg-black border border-gray-800 rounded-xl p-4 focus:outline-none focus:border-indigo-500 transition">
+                    <div class="border-2 border-dashed border-gray-800 rounded-xl p-12 hover:border-indigo-500 cursor-pointer transition">
+                        <i class="fa-solid fa-cloud-arrow-up text-4xl mb-4 text-gray-600"></i>
+                        <p class="text-sm text-gray-500">Drag & drop or <span class="text-indigo-400">browse files</span></p>
+                    </div>
+                </div>
+
+                <button id="processBtn" class="btn-primary w-full py-4 rounded-xl font-bold text-lg">
+                    Generate 5 Shorts Free
+                </button>
+            </div>
+
+            <!-- Features Summary -->
+            <div class="grid grid-cols-3 gap-4">
+                <div class="glass-card p-4 text-center">
+                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-400 mb-2"></i>
+                    <p class="text-xs text-gray-400 uppercase tracking-widest">Auto Detect</p>
+                </div>
+                <div class="glass-card p-4 text-center">
+                    <i class="fa-solid fa-closed-captioning text-indigo-400 mb-2"></i>
+                    <p class="text-xs text-gray-400 uppercase tracking-widest">Smart Captions</p>
+                </div>
+                <div class="glass-card p-4 text-center">
+                    <i class="fa-solid fa-bolt text-indigo-400 mb-2"></i>
+                    <p class="text-xs text-gray-400 uppercase tracking-widest">1080p Export</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Real-time Preview -->
+        <div class="lg:col-span-5">
+            <div class="glass-card p-6 h-full flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-bold">Preview (Short #1)</h3>
+                    <span class="text-xs bg-indigo-600 px-2 py-1 rounded">9:16 Format</span>
+                </div>
+                
+                <!-- Player Area -->
+                <div class="short-preview flex-grow mb-6">
+                    <div class="absolute top-4 right-4 text-white/50 text-xs">00:45</div>
+                    <i class="fa-solid fa-play text-6xl text-white/10"></i>
+                    <!-- Animated Captions with No-Cut Logic -->
+                    <div class="caption-overlay">
+                        AI IS THE <span class="text-yellow-400">FUTURE</span> OF CREATION
+                    </div>
+                </div>
+
+                <!-- Export Settings -->
+                <div class="space-y-4">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Style</span>
+                        <span class="font-medium">Modern Stylish</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">Quality</span>
+                        <span class="font-medium">1080p (MP4)</span>
+                    </div>
+                    <button class="w-full bg-white text-black font-bold py-3 rounded-xl flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-download"></i> Download All 5 Clips
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Processing Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden">
+        <div class="text-center space-y-4">
+            <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-500 mx-auto loader-glow"></div>
+            <p class="text-xl font-medium tracking-tight">AI is analyzing scene transitions...</p>
+            <p class="text-sm text-gray-500 italic">Finding the best moments for your shorts.</p>
+        </div>
+    </div>
+
+    <script>
+        const processBtn = document.getElementById('processBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        processBtn.addEventListener('click', () => {
+            loadingOverlay.classList.remove('hidden');
+            setTimeout(() => {
+                loadingOverlay.classList.add('hidden');
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
